@@ -11,53 +11,69 @@
 
 using namespace std;
 
-/**
- * input: vector of integers that fit into memory
- * output: vector is sorted (<)
- * start, end and middle are always naturals. We could have used unsigend int.
- * Complexity: O(nlog(n))
+/** merge
+ *  v: vector to be sorted, passed by ref to avoid copy memory
+ *  s: index inside v to start sorting
+ *  e: index inside v to end sorting
+ *  m: index inside v pointing to mid (division of both parts)
  */
 
-void merge(vector<int> &A, int start, int end, int middle){
-    vector<int> first_half;
-    vector<int> second_half;
-    int iterator_A=start;
-    int iterator_first_half=0;
-    int iterator_second_half=0;
+void merge(vector<int> &v, unsigned int s, unsigned int e, unsigned int m){
+    vector<int> l; // temp vector to store first half of v
+    vector<int> r; // temp vector to store second half of v
+    unsigned int it_v = s; // v iterator
+    unsigned int it_l = 0; // left part iterator
+    unsigned int it_r = 0; // right part iterator
+    unsigned int n1 = m - s + 1; // size of left part
+    unsigned int n2 = e - m; // size of right part
 
-    for(int i=0; i<middle-start+1; ++i){
-        first_half.push_back(A[start+i]);
+
+    // store first half in temp vector
+    for(int i = 0; i < m - s + 1; ++i){
+        l.push_back(v[s + i]);
     }
 
-    for(int i=0; i<end-middle; ++i)
-        second_half.push_back(A[middle+1+i]);
+    // store second half in temp vector
+    for(int i = 0; i < e - m; ++i) {
+        r.push_back(v[m + 1 + i]);
+    }
 
-    while(iterator_first_half<first_half.size()){
-        if(iterator_second_half==second_half.size() or first_half[iterator_first_half]<second_half[iterator_second_half]){
-            A[iterator_A]=first_half[iterator_first_half];
-            ++iterator_first_half;
+    // keep filling final vector with both sorted halfs
+    while (it_l < n1 && it_r < n2) {
+        if (l[it_l] <= r[it_r]) {
+            v[it_v++] = l[it_l++];
         } else {
-            A[iterator_A]=second_half[iterator_second_half];
-            ++iterator_second_half;
+            v[it_v++] = r[it_r++];
         }
-        ++iterator_A;
     }
 
-    while(iterator_second_half < second_half.size()){
-        A[iterator_A] = second_half[iterator_second_half];
-        ++iterator_second_half;
-        ++iterator_A;
+    // fill with remains of left part
+    while (it_l < n1) {
+        v[it_v++] = l[it_l++];
     }
 
+    // fill with remains of right part
+    while (it_r < n2) {
+        v[it_v++] = r[it_r++];
+    }
 }
 
-void merge_sort(vector<int> &A, int start, int end){
-    if(start<end){
-        //implicit floor((start+end)/2)
-        int middle=(start+end)/2;
-        merge_sort(A, start, middle);
-        merge_sort(A, middle+1, end);
-        merge(A, start, end, middle);
+/** merge sort
+ *  v: vector to be sorted, passed by ref to avoid copy
+ *  s: index inside v to start sorting
+ *  e: index inside v to end sorting
+ */
+void merge_sort(vector<int> &v, unsigned int s, unsigned int e){
+    // exit case?
+    if(s < e) {
+        // get mid point, implicit floor()
+        unsigned int m = (s + e) / 2;
+        // sort recursively first half
+        merge_sort(v, s, m);
+        // sort recursively second half
+        merge_sort(v, m + 1, e);
+        // merge both (sorted) parts
+        merge(v, s, e, m);
     }
 }
 
@@ -70,8 +86,8 @@ int main(){
     vectorToSort.push_back(3);
     vectorToSort.push_back(2);
     vectorToSort.push_back(-23);
-    merge_sort(vectorToSort, 0, vectorToSort.size()-1);
-    for(int i=0; i<vectorToSort.size(); ++i)
+    merge_sort(vectorToSort, 0, vectorToSort.size() - 1);
+    for(int i = 0; i < vectorToSort.size(); ++i)
         cout << " " << vectorToSort[i];
     cout << endl;
 }
